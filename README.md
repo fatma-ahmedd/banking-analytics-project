@@ -1,5 +1,4 @@
 # banking-analytics-project
-# Banking Analytics Project
 
 ## Overview
 
