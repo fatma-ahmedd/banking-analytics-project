@@ -1,0 +1,283 @@
+/* creting bronze layer tables
+droping tables if they are already exist
+
+run this script to re-define the ddl structure of 'bronze' tables 
+*/ 
+
+
+USE [banking project]
+GO
+
+
+if OBJECT_ID('[bronze].[transactions]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[transactions];
+
+CREATE TABLE [bronze].[transactions](
+	[TransactionID] [int] NOT NULL,
+	[AccountOriginID] [int] NOT NULL,
+	[AccountDestinationID] [int] NOT NULL,
+	[TransactionTypeID] [tinyint] NOT NULL,
+	[Amount] [float] NOT NULL,
+	[TransactionDate] [nvarchar](50) NULL,
+	[BranchID] [tinyint] NOT NULL,
+	[Description] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[transaction_types]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[transaction_types];
+GO
+
+CREATE TABLE [bronze].[transaction_types](
+	[TransactionTypeID] [tinyint] NOT NULL,
+	[TypeName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[loans]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[loans];
+GO
+
+CREATE TABLE [bronze].[loans](
+	[LoanID] [int] NOT NULL,
+	[AccountID] [int] NOT NULL,
+	[LoanStatusID] [tinyint] NOT NULL,
+	[PrincipalAmount] [float] NOT NULL,
+	[InterestRate] [float] NOT NULL,
+	[StartDate] [nvarchar](50) NULL,
+	[EstimatedEndDate] [nvarchar](50) NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+
+if OBJECT_ID('[bronze].[loan_statuses]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[loan_statuses];
+
+	CREATE TABLE [bronze].[loan_statuses](
+	[LoanStatusID] [tinyint] NOT NULL,
+	[StatusName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[customers]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[customers];
+GO
+
+CREATE TABLE [bronze].[customers](
+	[CustomerID] [smallint] NOT NULL,
+	[FirstName] [nvarchar](50) NULL,
+	[LastName] [nvarchar](50) NULL,
+	[DateOfBirth] [nvarchar](50) NOT NULL,
+	[AddressID] [smallint] NOT NULL,
+	[CustomerTypeID] [tinyint] NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[customer_types]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[customer_types];
+GO
+
+CREATE TABLE [bronze].[customer_types](
+	[CustomerTypeID] [tinyint] NOT NULL,
+	[TypeName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[branches]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[branches];
+
+	GO
+
+CREATE TABLE [bronze].[branches](
+	[BranchID] [tinyint] NOT NULL,
+	[BranchName] [nvarchar](50) NOT NULL,
+	[AddressID] [smallint] NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[addresses]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[addresses];
+
+	GO
+
+CREATE TABLE [bronze].[addresses](
+	[AddressID] [smallint] NOT NULL,
+	[Street] [nvarchar](50) NULL,
+	[City] [nvarchar](50) NULL,
+	[Country] [nvarchar](50) NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[accounts]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[accounts];
+
+	GO
+
+CREATE TABLE [bronze].[accounts](
+	[AccountID] [int] NOT NULL,
+	[CustomerID] [smallint] NOT NULL,
+	[AccountTypeID] [tinyint] NOT NULL,
+	[AccountStatusID] [tinyint] NOT NULL,
+	[Balance] [float] NOT NULL,
+	[OpeningDate] [nvarchar](50) NULL
+) ON [PRIMARY]
+GO 
+
+---------------------------------------------------------------
+
+if OBJECT_ID('[bronze].[account_types]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[account_types];
+
+	GO
+
+CREATE TABLE [bronze].[account_types](
+	[AccountTypeID] [tinyint] NOT NULL,
+	[TypeName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+ 
+ ---------------------------------------------------------------
+
+ if OBJECT_ID('[bronze].[account_statuses]', 'U') IS NOT NULL
+	DROP TABLE [bronze].[account_statuses];
+
+	GO
+
+CREATE TABLE [bronze].[account_statuses](
+	[AccountStatusID] [tinyint] NOT NULL,
+	[StatusName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+
+
+create or alter procedure bronze.load_data as 
+
+ begin try 
+ print '========================================';
+ print 'Loading bronze layer';
+ print '========================================';
+
+
+
+
+	 print '--------------------------------------------' ;
+	 print 'Loading bronze tables' ;
+	 print '--------------------------------------------' ;
+
+	 print 'truncating table bronze.transactions' ; 
+	 TRUNCATE TABLE bronze.transactions;
+
+	 print 'inserting into bronze.transactions' ; 
+	 bulk insert bronze.transactions from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\transactions.csv'
+	 with (firstrow = 2, fieldterminator =',',     ROWTERMINATOR = '0x0a', tablock  );
+
+
+
+
+	 print 'truncating table bronze.transaction_types' ; 
+	 TRUNCATE TABLE bronze.transaction_types;
+	 print 'inserting into bronze.transaction_types' ; 
+	 bulk insert bronze.transaction_types from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\transaction_types.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );
+
+
+
+	 print 'truncating table bronze.loans' ; 
+	 TRUNCATE TABLE bronze.loans;
+	 print 'inserting into bronze.loans' ; 
+	 bulk insert bronze.loans from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\loans.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );
+
+
+
+	 print 'truncating table bronze.loan_statuses' ; 
+	 TRUNCATE TABLE bronze.loan_statuses;
+	 print 'inserting into bronze.loan_statuses' ; 
+	 bulk insert bronze.loan_statuses from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\loan_statuses.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  ); 
+
+
+
+	 print 'truncating table bronze.customers' ; 
+	 TRUNCATE TABLE bronze.customers;
+	 print 'inserting into bronze.customers' ;
+	 bulk insert bronze.customers from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\customers.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  ); 
+
+
+
+	 print 'truncating table bronze.customer_types' ;
+	 TRUNCATE TABLE bronze.customer_types;
+	 print 'inserting into bronze.customer_types' ;
+	 bulk insert bronze.customer_types from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\customer_types.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );  
+
+
+	 	 print 'truncating table bronze.branches' ;
+	 TRUNCATE TABLE bronze.branches;
+	 print 'inserting into bronze.branches' ;
+	 bulk insert bronze.branches from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\branches.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );  
+
+
+
+	 	 print 'truncating table bronze.addresses' ;
+	 TRUNCATE TABLE bronze.addresses;
+	 print 'inserting into bronze.addresses' ;
+	 bulk insert bronze.addresses from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\addresses.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );  
+
+
+	 	 print 'truncating table bronze.accounts' ;
+	 TRUNCATE TABLE bronze.accounts;
+	 print 'inserting into bronze.accounts' ;
+	 bulk insert bronze.accounts from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\accounts.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );  
+
+
+
+
+	 	 print 'truncating table bronze.account_types' ;
+	 TRUNCATE TABLE bronze.account_types;
+	 print 'inserting into bronze.account_types' ;
+	 bulk insert bronze.account_types from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\account_types.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );  
+
+
+
+
+	 	 print 'truncating table bronze.account_statuses' ;
+	 TRUNCATE TABLE bronze.account_statuses;
+	 print 'inserting into bronze.account_statuses' ;
+	 bulk insert bronze.account_statuses from 'C:\Users\fatma\Downloads\banking project\uploaded to kaggle\account_statuses.csv'
+	 with (firstrow = 2, fieldterminator =',',ROWTERMINATOR = '0x0a', tablock  );  
+
+
+  
+ end try 
+
+       begin catch
+	   print '===================================================';
+       print 'Error occurred while loading data into bronze layer';
+	   PRINT ERROR_MESSAGE();
+	   print '===================================================';
+       end catch
