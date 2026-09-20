@@ -1,0 +1,54 @@
+-- This code is used to verify the data and ensure that it has been loaded correctly--
+
+SELECT 'transactions' AS TableName, COUNT(*) AS RowCountd
+FROM bronze.transactions
+
+UNION ALL
+
+SELECT 'transaction_types', COUNT(*)
+FROM bronze.transaction_types
+
+UNION ALL
+
+SELECT 'loans', COUNT(*)
+FROM bronze.loans
+
+UNION ALL
+
+SELECT 'loan_statuses', COUNT(*)
+FROM bronze.loan_statuses
+
+UNION ALL
+
+SELECT 'customers', COUNT(*)
+FROM bronze.customers
+
+UNION ALL
+
+SELECT 'customer_types', COUNT(*)
+FROM bronze.customer_types
+
+UNION ALL
+
+SELECT 'branches', COUNT(*)
+FROM bronze.branches
+
+UNION ALL
+
+SELECT 'addresses', COUNT(*)
+FROM bronze.addresses
+
+UNION ALL
+
+SELECT 'accounts', COUNT(*)
+FROM bronze.accounts
+
+UNION ALL
+
+SELECT 'account_types', COUNT(*)
+FROM bronze.account_types
+
+UNION ALL
+
+SELECT 'account_statuses', COUNT(*)
+FROM bronze.account_statuses;
