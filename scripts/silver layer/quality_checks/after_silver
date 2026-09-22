@@ -1,0 +1,86 @@
+-- quality check after silver layer --
+
+-- [ 01 ] transaction table -- 
+
+SELECT transactionid ,COUNT(*) AS SilverCount
+FROM silver.transactions
+GROUP BY transactionid
+having COUNT(*) > 1;
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+
+-- [ 03 ] loan table -- 
+
+select loanid ,COUNT(*) AS SilverCount
+from silver.loans
+group by loanid
+having COUNT(*) > 1 ; 
+
+----------------------------------------------------
+
+select * 
+from silver.loans
+where startdate>EstimatedEndDate;
+
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+-- [ 05 ] customers table --
+
+select *
+from silver.customers 
+where DateOfBirth is null ;
+
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+-- [ 08 ] address table --
+
+select distinct country
+from silver.addresses ;
+
+----------------------------------------------------------------
+
+select addressid , count(addressid) as address_count
+from silver.addresses
+group by addressid 
+having count(addressid) > 1 ;
+
+---------------------------------------------------------------
+SELECT *
+FROM silver.addresses
+WHERE Street IS NULL
+   OR City IS NULL
+   OR Country IS NULL;
+
+---------------------------------------------------------------
+
+SELECT COUNT(*) AS bronze_count
+FROM bronze.addresses;
+
+SELECT COUNT(*) AS silver_count
+FROM silver.addresses;
+
+---------------------------------------------------------------  
+
+SELECT *
+FROM silver.addresses
+WHERE Street = 'Unknown'
+   OR City = 'Unknown'
+   OR Country = 'Unknown';
+
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
+ -- [ 09 ] accounts table --
+
+ select 
+    count(*) as total_rows,
+    count(distinct AccountID) as distinct_accounts
+from silver.accounts;
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
