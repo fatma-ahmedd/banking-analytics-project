@@ -1,3 +1,5 @@
+-- creating procedure for silver layer --
+
 CREATE OR ALTER PROCEDURE SILVER.LOAD_DATA AS
 
 BEGIN
