@@ -4,7 +4,10 @@ droping tables if they are already exist
 run this script to re-define the ddl structure of 'bronze' tables 
 */ 
 
+-- creating bronze tables --  
 
+
+-- [ 01 ] transactions table --
 
 if OBJECT_ID('[bronze].[transactions]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[transactions];
@@ -23,6 +26,8 @@ GO
 
 --------------------------------------------------------------
 
+-- [ 02 ] transaction_types table --
+
 if OBJECT_ID('[bronze].[transaction_types]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[transaction_types];
 GO
@@ -34,6 +39,8 @@ CREATE TABLE [bronze].[transaction_types](
 GO
 
 --------------------------------------------------------------
+
+-- [ 03 ] loans table --
 
 if OBJECT_ID('[bronze].[loans]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[loans];
@@ -52,6 +59,7 @@ GO
 
 --------------------------------------------------------------
 
+-- [ 04 ] loan_statuses table --
 
 if OBJECT_ID('[bronze].[loan_statuses]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[loan_statuses];
@@ -63,6 +71,8 @@ if OBJECT_ID('[bronze].[loan_statuses]', 'U') IS NOT NULL
 GO
 
 --------------------------------------------------------------
+
+-- [ 05 ] customers table --
 
 if OBJECT_ID('[bronze].[customers]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[customers];
@@ -80,6 +90,8 @@ GO
 
 ---------------------------------------------------------------
 
+-- [ 06 ] customer_types table --
+
 if OBJECT_ID('[bronze].[customer_types]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[customer_types];
 GO
@@ -91,6 +103,9 @@ CREATE TABLE [bronze].[customer_types](
 GO
 
 ---------------------------------------------------------------
+
+-- [ 07 ] branches table --
+
 
 if OBJECT_ID('[bronze].[branches]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[branches];
@@ -106,6 +121,8 @@ GO
 
 ---------------------------------------------------------------
 
+-- [ 08 ] addresses table --
+
 if OBJECT_ID('[bronze].[addresses]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[addresses];
 
@@ -120,6 +137,9 @@ CREATE TABLE [bronze].[addresses](
 GO
 
 ---------------------------------------------------------------
+
+-- [ 09 ] accounts table --
+
 
 if OBJECT_ID('[bronze].[accounts]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[accounts];
@@ -138,6 +158,8 @@ GO
 
 ---------------------------------------------------------------
 
+-- [ 10 ] account_types table --
+
 if OBJECT_ID('[bronze].[account_types]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[account_types];
 
@@ -150,6 +172,9 @@ CREATE TABLE [bronze].[account_types](
 GO
  
  ---------------------------------------------------------------
+
+-- [ 11 ] account_statuses table --
+
 
  if OBJECT_ID('[bronze].[account_statuses]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[account_statuses];
