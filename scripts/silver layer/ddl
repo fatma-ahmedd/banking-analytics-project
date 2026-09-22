@@ -1,0 +1,179 @@
+-- creating silver tables --
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+--[ 01 ] transactions table --
+
+if OBJECT_ID('[silver].[transactions]', 'U') IS NOT NULL
+	DROP TABLE [silver].[transactions];
+
+CREATE TABLE [silver].[transactions](
+	[TransactionID] [int] NOT NULL,
+	[AccountOriginID] [int] NOT NULL,
+	[AccountDestinationID] [int] NOT NULL,
+	[TransactionTypeID] [tinyint] NOT NULL,
+	[Amount] [decimal](18,2) NOT NULL,
+	[TransactionDate] [datetime2] NULL,
+	[BranchID] [tinyint] NOT NULL,
+	[Description] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+--[ 02 ] transaction_types table --
+
+if OBJECT_ID('[silver].[transaction_types]', 'U') IS NOT NULL
+	DROP TABLE [silver].[transaction_types];
+GO
+
+CREATE TABLE [silver].[transaction_types](
+	[TransactionTypeID] [tinyint] NOT NULL,
+	[TypeName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+--[ 03 ] loans table --
+
+if OBJECT_ID('[silver].[loans]', 'U') IS NOT NULL
+	DROP TABLE [silver].[loans];
+GO
+
+CREATE TABLE [silver].[loans](
+	[LoanID] [int] NOT NULL,
+	[AccountID] [int] NOT NULL,
+	[LoanStatusID] [tinyint] NOT NULL,
+	[PrincipalAmount] [decimal](18,2) NOT NULL,
+	[InterestRate] [decimal](10,4) NOT NULL,
+	[StartDate] [datetime2] NULL,
+	[EstimatedEndDate] [datetime2] NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+--[ 04 ] loan_statuses table --
+
+if OBJECT_ID('[silver].[loan_statuses]', 'U') IS NOT NULL
+	DROP TABLE [silver].[loan_statuses];
+
+	CREATE TABLE [silver].[loan_statuses](
+	[LoanStatusID] [tinyint] NOT NULL,
+	[StatusName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+--------------------------------------------------------------
+
+--[ 05 ] customers table --
+
+if OBJECT_ID('[silver].[customers]', 'U') IS NOT NULL
+	DROP TABLE [silver].[customers];
+GO
+
+CREATE TABLE [silver].[customers](
+	[CustomerID] [smallint] NOT NULL,
+	[FirstName] [nvarchar](50) not NULL,
+	[LastName] [nvarchar](50) not NULL,
+	[DateOfBirth] [datetime2] NULL,
+	[AddressID] [smallint] NOT NULL,
+	[CustomerTypeID] [tinyint] NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+--[ 06 ] customer_types table --
+
+if OBJECT_ID('[silver].[customer_types]', 'U') IS NOT NULL
+	DROP TABLE [silver].[customer_types];
+GO
+
+CREATE TABLE [silver].[customer_types](
+	[CustomerTypeID] [tinyint] NOT NULL,
+	[TypeName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+--[ 07 ] branches table --
+
+if OBJECT_ID('[silver].[branches]', 'U') IS NOT NULL
+	DROP TABLE [silver].[branches];
+
+	GO
+
+CREATE TABLE [silver].[branches](
+	[BranchID] [tinyint] NOT NULL,
+	[BranchName] [nvarchar](50) NOT NULL,
+	[AddressID] [smallint] NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+--[ 08 ] addresses table --
+
+
+if OBJECT_ID('[silver].[addresses]', 'U') IS NOT NULL
+	DROP TABLE [silver].[addresses];
+
+	GO
+
+CREATE TABLE [silver].[addresses](
+	[AddressID] [smallint] NOT NULL,
+	[Street] [nvarchar](50) NOT NULL,
+	[City] [nvarchar](50) NOT NULL,
+	[Country] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+
+---------------------------------------------------------------
+
+--[ 09 ] accounts table --
+
+if OBJECT_ID('[silver].[accounts]', 'U') IS NOT NULL
+	DROP TABLE [silver].[accounts];
+
+	GO
+
+CREATE TABLE [silver].[accounts](
+	[AccountID] [int] NOT NULL,
+	[CustomerID] [smallint] NOT NULL,
+	[AccountTypeID] [tinyint] NOT NULL,
+	[AccountStatusID] [tinyint] NOT NULL,
+	[Balance] [decimal](18, 2) NOT NULL,
+	[OpeningDate] [datetime2] NULL
+) ON [PRIMARY]
+GO 
+
+---------------------------------------------------------------
+
+--[ 10 ] account_types table --
+
+if OBJECT_ID('[silver].[account_types]', 'U') IS NOT NULL
+	DROP TABLE [silver].[account_types];
+
+	GO
+
+CREATE TABLE [silver].[account_types](
+	[AccountTypeID] [tinyint] NOT NULL,
+	[TypeName] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+ 
+ ---------------------------------------------------------------
+
+ --[ 11 ] account_statuses table --
+
+ if OBJECT_ID('[silver].[account_statuses]', 'U') IS NOT NULL
+	DROP TABLE [silver].[account_statuses];
+
+	GO
+
+CREATE TABLE [silver].[account_statuses](
+	[AccountStatusID] [tinyint] NOT NULL,
+	[StatusName] [nvarchar](50) NOT NULL
+) ON [PRIMARY] ;  
