@@ -1,0 +1,650 @@
+-- quality check before silver layer --
+
+-- [ 01 ]transaction table --
+
+SELECT AccountDestinationID
+FROM bronze.transactions as t
+left join bronze.accounts as a
+on t.AccountDestinationID = a.AccountID 
+where a.Accountid is null ;
+
+---------------------------------------
+
+SELECT AccountOriginID
+FROM bronze.transactions as t
+left join bronze.accounts as a
+on t.AccountOriginID = a.AccountID 
+where a.Accountid is null;
+
+---------------------------------------
+
+WITH duplicate_transactions AS (
+    SELECT TransactionID
+    FROM bronze.transactions
+    GROUP BY TransactionID
+    HAVING COUNT(*) > 1
+)
+SELECT t.*
+FROM bronze.transactions AS t
+JOIN duplicate_transactions AS d
+    ON t.TransactionID = d.TransactionID
+    order by t.TransactionID;
+
+-----------------------------------------
+
+    SELECT
+    TransactionID,
+    AccountOriginID,
+    AccountDestinationID,
+    TransactionTypeID,
+    Amount,
+    TransactionDate,
+    BranchID,
+    Description,
+    COUNT(*) AS duplicate_count
+FROM bronze.transactions
+GROUP BY
+    TransactionID,
+    AccountOriginID,
+    AccountDestinationID,
+    TransactionTypeID,
+    Amount,
+    TransactionDate,
+    BranchID,
+    Description
+HAVING COUNT(*) > 1
+order by TransactionID;
+
+-----------------------------------
+
+SELECT TransactionDate
+FROM bronze.transactions
+WHERE TRY_CONVERT(datetime2, TransactionDate) IS NULL
+  AND TransactionDate IS NOT NULL;
+
+-----------------------------------
+
+select *
+from bronze.transactions
+where try_convert(decimal(18,2), Amount) is null
+  and Amount is not null;
+
+-----------------------------------
+
+  select t.transactiontypeid
+from bronze.transactions as t 
+left join bronze.transaction_types as tt
+on t.transactiontypeid = tt.transactiontypeid 
+where tt.transactiontypeid is null ; 
+
+------------------------------------
+
+select t.BranchID
+from bronze.transactions as t 
+left join bronze.branches as b
+on t.BranchID = b.BranchID 
+where b.BranchID is null ;
+
+-------------------------------------
+
+select *
+from bronze.transactions
+where TransactionID is null;
+
+-------------------------------------
+
+select *
+from bronze.transactions
+where  AccountOriginID is null;
+
+-------------------------------------
+
+select *
+from bronze.transactions
+where AccountDestinationID is null;
+
+-------------------------------------
+
+select *
+from bronze.transactions
+where TransactionTypeID is null;
+
+
+-------------------------------------
+select *
+from bronze.transactions
+where BranchID is null;
+
+-------------------------------------
+
+select *
+from bronze.transactions
+where Amount is null;
+
+-------------------------------------
+
+SELECT *
+FROM bronze.transactions
+WHERE Description IS NULL;
+
+
+------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
+
+-- [ 02 ] transaction_types table -- 
+
+select * 
+from bronze.transaction_types
+where typename!= trim(typename);
+
+
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+
+-- [ 03 ]loan table --
+
+select top 100 * from bronze.loans;
+     
+     
+     
+     
+select loanid , count(loanid) as countw
+from bronze.loans
+group by loanid
+having count(loanid) > 1 ;
+
+-----------------------------------------------
+
+        WITH duplicate_transactions AS (
+            SELECT loanID
+            FROM bronze.loans
+            GROUP BY loanID
+            HAVING COUNT(*) > 1
+        )
+ SELECT t.*
+ FROM bronze.loans AS t
+ JOIN duplicate_transactions AS d
+ ON t.loanID = d.loanID
+ ORDER BY t.loanID ;
+
+---------------------------------------------------
+select l.accountid 
+from bronze.loans as l 
+left join bronze.accounts as a 
+on l.accountid = a.accountid 
+where a.accountid is null ; 
+
+----------------------------------------------------
+
+select l.loanstatusid
+from bronze.loans as l
+left join bronze.loan_statuses as ls
+on l.loanstatusid = ls.loanstatusid
+where ls.loanstatusid is null ;
+
+----------------------------------------------------
+
+SELECT startdate
+FROM bronze.loans
+WHERE TRY_CONVERT(datetime2, startdate) IS NULL
+AND startdate IS NOT NULL; 
+
+----------------------------------------------------
+            
+SELECT EstimatedEndDate
+FROM bronze.loans
+WHERE TRY_CONVERT(datetime2, EstimatedEndDate) IS NULL
+AND EstimatedEndDate IS NOT NULL; 
+
+-----------------------------------------------------
+
+select * 
+from bronze.loans 
+where StartDate> EstimatedEndDate;
+
+-----------------------------------------------------
+
+select *
+from bronze.loans
+where try_convert(decimal(18,2), PrincipalAmount) is null
+  and PrincipalAmount is not null;
+
+------------------------------------------------------------
+
+select *
+from bronze.loans
+where try_convert(decimal(10,4), InterestRate) is null
+  and InterestRate is not null;
+
+------------------------------------------------------------
+
+select * 
+from bronze.loans 
+where loanid is null ;
+
+select * 
+from bronze.loans 
+where accountid is null;
+            
+select * 
+from bronze.loans 
+where loanstatusid is null;
+            
+select * 
+from bronze.loans 
+where PrincipalAmount is null ;
+
+
+select * 
+from bronze.loans 
+where InterestRate is null ;
+             
+             
+select * 
+from bronze.loans 
+where startdate is null ;
+
+
+select * 
+from bronze.loans 
+where EstimatedEndDate is null ;
+
+
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+-- [ 04 ]loan_statuses table --
+
+select * 
+from bronze.loan_statuses
+where StatusName != trim(StatusName);
+
+
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+
+-- [ 05 ]customers table --
+
+select top 100 * 
+from bronze.customers;
+
+--------------------------------------------------------------
+
+select customerid , count(customerid) as customer_count
+from bronze.customers
+group by customerid
+having count(customerid) > 1 ; 
+
+--------------------------------------------------------------
+
+  WITH duplicate_customers AS (
+            SELECT customerid, count(customerid) as customer_count
+            FROM bronze.customers
+            GROUP BY customerid
+            HAVING COUNT(*) > 1
+        )
+SELECT t.*
+FROM bronze.customers AS t
+JOIN duplicate_customers AS d
+ON t.customerid = d.customerid
+order by t.customerid ;
+----------------------------------------------------------------
+
+select *
+from bronze.customers
+where firstname!=trim(firstname);
+ 
+ ---------------------------------------------------------------
+
+select *
+from bronze.customers
+where lastname!=trim(lastname);
+
+----------------------------------------------------------------
+
+select *
+from bronze.customers
+where try_convert(datetime2 , DateofBirth) is null 
+and DateofBirth is not null;
+ 
+ --------------------------------------------------------------
+
+select c.addressid 
+from bronze.customers as c
+left join bronze.addresses as a
+on c.addressid = a.addressid 
+where a.addressid is null;
+
+ --------------------------------------------------------------
+
+select c.CustomerTypeID 
+from bronze.customers as c
+left join bronze.customer_types as ct
+on c.CustomerTypeID = ct.CustomerTypeID 
+where ct.CustomerTypeID is null;
+
+--------------------------------------------------------------
+
+select * 
+from bronze.customers
+where CustomerID is null;
+
+ --------------------------------------------------------------
+ 
+select * 
+from bronze.customers
+where firstname is null;
+
+----------------------------------------------------------------
+ 
+select * 
+from bronze.customers
+where lastname is null;
+
+----------------------------------------------------------------
+ 
+select * 
+from bronze.customers
+where dateofbirth  is null;
+ 
+----------------------------------------------------------------
+
+select * 
+from bronze.customers
+where AddressID is null;
+
+-----------------------------------------------------------------
+select * 
+from bronze.customers
+where customertypeid is null;
+
+
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+ 
+ -- [ 06 ]customer_types table -- 
+ select * 
+from bronze.customer_types
+where typename!= trim(typename);
+
+
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+
+-- [ 07 ]branches table --
+
+select top 100 * 
+from bronze.branches; 
+
+--------------------------------------------------------
+
+select branchid ,count(branchid) as id_count
+from bronze.branches 
+group by branchid
+having count(branchid) > 1;
+
+--------------------------------------------------------
+
+select branchname ,count(branchname) as id_count
+from bronze.branches 
+group by branchname
+having count(branchname) > 1;
+
+--------------------------------------------------------
+
+select b.addressid 
+from bronze.branches b
+left join bronze.addresses a 
+on b.addressid = a.addressid
+where a.addressid is null;
+
+---------------------------------------------------------
+
+select *
+from bronze.branches
+where BranchID is null
+   or BranchName is null
+   or AddressID is null;
+
+---------------------------------------------------------
+
+select *
+from bronze.branches
+where BranchName!= trim(BranchName) ;
+
+
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+
+-- [ 08 ] addresses table --
+
+select top 100 * 
+from bronze.addresses
+
+---------------------------------------------------------
+
+select addressid , count(addressid) as address_count
+from bronze.addresses
+group by addressid 
+having count(addressid) > 1
+
+---------------------------------------------------------
+
+WITH duplicate_addresses AS (
+            SELECT addressid, count(addressid) as address_count
+            FROM bronze.addresses
+            GROUP BY addressid
+            HAVING COUNT(*) > 1
+            )
+
+SELECT t.*
+FROM bronze.addresses AS t
+JOIN duplicate_addresses AS d
+ON t.addressid = d.addressid
+order by t.addressid  ;
+
+----------------------------------------------------------
+
+select * 
+from bronze.addresses
+where street !=trim(street);
+
+----------------------------------------------------------
+
+select * 
+from bronze.addresses
+where city !=trim(city) ;
+
+----------------------------------------------------------
+
+select * 
+from bronze.addresses
+where country !=trim(country);
+
+----------------------------------------------------------
+
+select *
+from bronze.addresses
+where street is null;
+
+----------------------------------------------------------
+
+select *
+from bronze.addresses
+where city is null;
+
+----------------------------------------------------------
+
+select *
+from bronze.addresses
+where country is null;
+
+----------------------------------------------------------
+
+select *
+from bronze.addresses
+where trim(street) = ''
+   or trim(city) = ''
+   or trim(country) = '';
+
+----------------------------------------------------------
+
+select distinct country
+from bronze.addresses
+order by country;
+
+----------------------------------------------------------
+
+SELECT DISTINCT city
+FROM bronze.addresses
+WHERE city LIKE '%[0-9]%'
+   OR city LIKE '%[^a-zA-Z .''-]%';   
+
+----------------------------------------------------------
+
+SELECT LOWER(TRIM(city)) AS city_clean,
+       COUNT(DISTINCT city) AS variations
+FROM bronze.addresses
+GROUP BY LOWER(TRIM(city))
+HAVING COUNT(DISTINCT city) > 1
+ORDER BY variations DESC; 
+
+
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+
+-- [ 09 ] accounts table --
+
+select top 100 * 
+from bronze.accounts;
+
+------------------------------------------------------------
+
+select accountid , count(accountid) as account_count
+from bronze.accounts
+group by accountid
+having count(accountid) > 1;
+
+-------------------------------------------------------------
+
+ WITH duplicate_accounts AS (
+            SELECT accountid, count(accountid) as account_count
+            FROM bronze.accounts
+            GROUP BY accountid
+            HAVING COUNT(*) > 1)
+        
+SELECT a.*
+FROM bronze.accounts AS a
+JOIN duplicate_accounts AS d
+ON a.accountid = d.accountid
+order by a.accountid ;
+
+-------------------------------------------------------------
+
+select a.customerid 
+from bronze.accounts as a 
+left join bronze.customers as c
+on a.customerid = c.customerid
+where c.customerid is null;
+
+-------------------------------------------------------------
+
+select a.AccountTypeID 
+from bronze.accounts as a 
+left join bronze.account_types as c
+on a.AccountTypeID = c.AccountTypeID
+where c.AccountTypeID is null;
+
+-------------------------------------------------------------
+
+select a.AccountStatusID 
+from bronze.accounts as a 
+left join bronze.account_statuses as c
+on a.AccountStatusID = c.AccountStatusID
+where c.AccountStatusID is null;
+
+-------------------------------------------------------------
+
+select try_convert(datetime2, OpeningDate) as ConvertedOpeningDate
+from bronze.accounts
+where try_convert(datetime2, OpeningDate) is null and OpeningDate is not null ;
+
+-------------------------------------------------------------
+
+select openingdate 
+from bronze.accounts 
+where try_convert(datetime2, openingdate) > getdate();
+
+--------------------------------------------------------------
+
+select try_convert(decimal(18,2), Balance) as ConvertedBalance
+from bronze.accounts
+where try_convert(decimal(18,2), Balance) is null and Balance is not null ;
+
+--------------------------------------------------------------
+
+select AccountID
+from bronze.accounts 
+where AccountID is null;
+
+--------------------------------------------------------------
+
+select customerID
+from bronze.accounts 
+where customerID is null;
+
+--------------------------------------------------------------
+
+select AccounttypeID
+from bronze.accounts 
+where AccounttypeID is null;
+
+---------------------------------------------------------------
+
+select AccountstatusID
+from bronze.accounts 
+where AccountstatusID is null;
+
+---------------------------------------------------------------
+
+select balance
+from bronze.accounts 
+where balance is null;
+
+----------------------------------------------------------------
+
+select OpeningDate
+from bronze.accounts 
+where OpeningDate is null;
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+-- [ 10 ] account_types table --
+
+select * 
+from bronze.account_types ;
+
+-------------------------------------
+
+select *
+from bronze.account_types
+where typename !=trim(typename);
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+-- [ 11 ] account_statuses --
+
+select * 
+from bronze.account_statuses ;
+
+select * 
+from bronze.account_statuses
+where statusname!= trim(statusname)
+ 
+
+--------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
