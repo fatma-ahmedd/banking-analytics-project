@@ -1,0 +1,207 @@
+-- inserting into silver tables --
+
+
+--[ 01 ] transactions table --
+
+insert into silver.transactions 
+			(TransactionID,
+			AccountOriginID,
+			AccountDestinationID,
+			TransactionTypeID,
+			Amount, 
+			TransactionDate, 
+			BranchID,
+			Description) 
+
+select distinct TransactionID,
+AccountOriginID,
+AccountDestinationID,
+TransactionTypeID,
+try_convert(decimal (18,2), Amount ) ,
+TRY_CONVERT(datetime2, TransactionDate) as TransactionDate, 
+BranchID,
+Description 
+from bronze.transactions 
+
+-------------------------------------------------------------------------
+
+--[ 02 ] transaction_types table --
+
+insert into silver.transaction_types
+			(TransactionTypeID, 
+			TypeName)
+
+select transactiontypeid , typename 
+from bronze.transaction_types
+
+---------------------------------------------------------------------------
+
+--[ 03 ] loans table --
+
+insert into silver.loans 
+			(LoanID,
+			AccountID,
+			LoanStatusID,
+			PrincipalAmount,
+			InterestRate,
+			StartDate,
+			EstimatedEndDate) 
+			
+select distinct LoanID,
+AccountID,
+LoanStatusID,
+try_convert(decimal(18,2) ,PrincipalAmount),
+try_convert(decimal(10,4) ,InterestRate ),
+CASE
+    WHEN TRY_CONVERT(datetime2, StartDate) >
+         TRY_CONVERT(datetime2, EstimatedEndDate)
+    THEN TRY_CONVERT(datetime2, EstimatedEndDate)
+    ELSE TRY_CONVERT(datetime2, StartDate)
+END AS StartDate,
+
+CASE
+    WHEN TRY_CONVERT(datetime2, StartDate) >
+         TRY_CONVERT(datetime2, EstimatedEndDate)
+    THEN TRY_CONVERT(datetime2, StartDate)
+    ELSE TRY_CONVERT(datetime2, EstimatedEndDate)
+END AS EstimatedEndDate
+from bronze.loans ;
+
+-------------------------------------------------------------------------------------------------
+
+--[ 04 ] loan_statuses table --
+
+insert into silver.loan_statuses 
+			(LoanStatusID, 
+			StatusName)
+
+select loanstatusid , statusname 
+from bronze.loan_statuses  
+-------------------------------------------------------------------------------------------------
+
+--[ 05 ] customers table --
+
+insert into silver.customers 
+			(CustomerID,
+			FirstName,
+			LastName,
+			DateOfBirth,
+			AddressID,
+			CustomerTypeID)
+
+select distinct 
+CustomerID,
+case 
+	when FirstName is null or trim(firstname) = '' then 'unknown'
+	else FirstName
+end as FirstName,
+case 
+	when LastName is null or trim(lastname) = '' then 'unknown'
+	else LastName
+end as LastName,
+
+CASE
+  
+    WHEN DateofBirth = 'NAT' THEN NULL
+
+    WHEN TRY_CONVERT(datetime2, DateofBirth) IS NOT NULL
+        THEN TRY_CONVERT(datetime2, DateofBirth)
+
+    ELSE TRY_CONVERT(
+        datetime2,
+        CONCAT(
+            LEFT(DateofBirth, 4), '-',
+            RIGHT(DateofBirth, 2), '-',
+            SUBSTRING(DateofBirth, 6, 2)
+        )
+    ) 
+END AS DateofBirth, 
+	AddressID,
+	CustomerTypeID
+from bronze.customers
+
+--------------------------------------------------------------------------------------------------
+
+--[ 06 ] customer_types table --
+
+insert into silver.customer_types 
+			(CustomerTypeID, 
+			TypeName)
+
+select customertypeid , typename
+from bronze.customer_types
+
+-------------------------------------------------------------------------------------------------
+
+--[ 07 ] branches table --
+
+insert into silver.branches 
+			(BranchID,
+			BranchName,
+			AddressID)
+
+select		BranchID,
+			BranchName,
+			AddressID
+from bronze.branches
+
+------------------------------------------------------------------------------------------------
+
+--[ 08 ] addresses table --
+
+INSERT INTO silver.addresses 
+			(AddressID,
+			Street,
+			City,
+			Country)
+
+select distinct AddressID,
+			ISNULL(street, 'Unknown') ,
+			ISNULL(city, 'Unknown') ,
+			CASE
+			WHEN Country IS NULL THEN 'Unknown'
+			ELSE 'United States'
+			END AS Country
+from bronze.addresses ;
+
+------------------------------------------------------------------------------------------------
+
+--[ 09 ] accounts table --
+
+insert into silver.accounts 
+			(AccountID,
+			customerid,
+			AccountTypeID,
+			AccountStatusID,
+			Balance,
+			OpeningDate) 
+
+
+select distinct accountid ,
+				CustomerID,
+				AccountTypeID ,
+				AccountStatusID ,
+				TRY_CONVERT(decimal (18,2) , balance ) , 
+				try_convert(datetime2 , openingdate ) 
+
+from bronze.accounts 
+
+-------------------------------------------------------------------------------------------------
+
+--[ 10 ] account_types table --
+
+insert into silver.account_types( AccountTypeID	, 
+								  TypeName ) 
+
+select AccountTypeID , TypeName 
+from bronze.account_types ; 
+
+--------------------------------------------------------------------------------------------------
+
+ --[ 11 ] account_statuses table --
+
+ insert into silver.account_statuses( AccountStatusID , 
+									  StatusName)
+
+select AccountStatusID , StatusName
+from bronze.account_statuses
