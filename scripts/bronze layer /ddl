@@ -5,9 +5,6 @@ run this script to re-define the ddl structure of 'bronze' tables
 */ 
 
 
-USE [banking project]
-GO
-
 
 if OBJECT_ID('[bronze].[transactions]', 'U') IS NOT NULL
 	DROP TABLE [bronze].[transactions];
