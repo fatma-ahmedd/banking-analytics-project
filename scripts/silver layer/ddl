@@ -1,3 +1,11 @@
+/* creting bronze layer tables
+droping tables if they are already exist
+
+run this script to re-define the ddl structure of 'bronze' tables 
+*/ 
+
+
+
 -- creating silver tables --
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
