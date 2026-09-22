@@ -1,0 +1,240 @@
+CREATE OR ALTER PROCEDURE SILVER.LOAD_DATA AS
+
+BEGIN
+
+
+print 'truncating table silver.transactions ' ; 
+TRUNCATE TABLE silver.transactions ;
+print 'inserting into silver.transactions ' ; 
+
+insert into silver.transactions 
+			(TransactionID,
+			AccountOriginID,
+			AccountDestinationID,
+			TransactionTypeID,
+			Amount, 
+			TransactionDate, 
+			BranchID,
+			Description) 
+
+select distinct TransactionID,
+AccountOriginID,
+AccountDestinationID,
+TransactionTypeID,
+try_convert(decimal (18,2), Amount ) ,
+TRY_CONVERT(datetime2, TransactionDate) as TransactionDate, 
+BranchID,
+Description 
+from bronze.transactions 
+
+-------------------------------------------------------------------------
+print 'truncating table silver.transaction_types' ; 
+TRUNCATE TABLE silver.transaction_types;
+print 'inserting into silver.transaction_types' ;
+
+insert into silver.transaction_types
+			(TransactionTypeID, 
+			TypeName)
+
+select transactiontypeid , typename 
+from bronze.transaction_types
+
+---------------------------------------------------------------------------
+print 'truncating table silver.loans' ; 
+TRUNCATE TABLE silver.loans;
+print 'inserting into silver.loans' ;
+
+insert into silver.loans 
+			(LoanID,
+			AccountID,
+			LoanStatusID,
+			PrincipalAmount,
+			InterestRate,
+			StartDate,
+			EstimatedEndDate) 
+			
+select distinct LoanID,
+AccountID,
+LoanStatusID,
+try_convert(decimal(18,2) ,PrincipalAmount),
+try_convert(decimal(10,4) ,InterestRate ),
+CASE
+    WHEN TRY_CONVERT(datetime2, StartDate) >
+         TRY_CONVERT(datetime2, EstimatedEndDate)
+    THEN TRY_CONVERT(datetime2, EstimatedEndDate)
+    ELSE TRY_CONVERT(datetime2, StartDate)
+END AS StartDate,
+
+CASE
+    WHEN TRY_CONVERT(datetime2, StartDate) >
+         TRY_CONVERT(datetime2, EstimatedEndDate)
+    THEN TRY_CONVERT(datetime2, StartDate)
+    ELSE TRY_CONVERT(datetime2, EstimatedEndDate)
+END AS EstimatedEndDate
+from bronze.loans ;
+
+-------------------------------------------------------------------------------------------------
+print 'truncating table silver.loan_statuses' ; 
+TRUNCATE TABLE silver.loan_statuses;
+print 'inserting into silver.loan_statuses' ;
+
+insert into silver.loan_statuses 
+			(LoanStatusID, 
+			StatusName)
+
+select loanstatusid , statusname 
+from bronze.loan_statuses  
+-------------------------------------------------------------------------------------------------
+
+print 'truncating table silver.customers' ; 
+TRUNCATE TABLE silver.customers;
+print 'inserting into silver.customers' ;
+
+
+insert into silver.customers 
+			(CustomerID,
+			FirstName,
+			LastName,
+			DateOfBirth,
+			AddressID,
+			CustomerTypeID)
+
+select distinct 
+CustomerID,
+case 
+	when FirstName is null or trim(firstname) = '' then 'unknown'
+	else FirstName
+end as FirstName,
+case 
+	when LastName is null or trim(lastname) = '' then 'unknown'
+	else LastName
+end as LastName,
+
+CASE
+  
+    WHEN DateofBirth = 'NAT' THEN NULL
+
+    WHEN TRY_CONVERT(datetime2, DateofBirth) IS NOT NULL
+        THEN TRY_CONVERT(datetime2, DateofBirth)
+
+    ELSE TRY_CONVERT(
+        datetime2,
+        CONCAT(
+            LEFT(DateofBirth, 4), '-',
+            RIGHT(DateofBirth, 2), '-',
+            SUBSTRING(DateofBirth, 6, 2)
+        )
+    ) 
+END AS DateofBirth, 
+	AddressID,
+	CustomerTypeID
+from bronze.customers
+
+--------------------------------------------------------------------------------------------------
+
+print 'truncating table silver.customer_types' ; 
+TRUNCATE TABLE silver.customer_types;
+print 'inserting into silver.customer_types' ;
+
+
+insert into silver.customer_types 
+			(CustomerTypeID, 
+			TypeName)
+
+select customertypeid , typename
+from bronze.customer_types
+
+-------------------------------------------------------------------------------------------------
+
+print 'truncating table silver.branches' ; 
+TRUNCATE TABLE silver.branches;
+print 'inserting into silver.branches' ;
+
+
+insert into silver.branches 
+			(BranchID,
+			BranchName,
+			AddressID)
+
+select		BranchID,
+			BranchName,
+			AddressID
+from bronze.branches
+
+------------------------------------------------------------------------------------------------
+
+print 'truncating table silver.addresses' ; 
+TRUNCATE TABLE silver.addresses;
+print 'inserting into silver.addresses' ;
+
+
+INSERT INTO silver.addresses 
+			(AddressID,
+			Street,
+			City,
+			Country)
+
+select distinct AddressID,
+			ISNULL(street, 'Unknown') ,
+			ISNULL(city, 'Unknown') ,
+			CASE
+			WHEN Country IS NULL THEN 'Unknown'
+			ELSE 'United States'
+			END AS Country
+from bronze.addresses ;
+
+------------------------------------------------------------------------------------------------
+
+print 'truncating table silver.accounts' ; 
+TRUNCATE TABLE silver.accounts;
+print 'inserting into silver.accounts' ;
+
+
+insert into silver.accounts 
+			(AccountID,
+			customerid,
+			AccountTypeID,
+			AccountStatusID,
+			Balance,
+			OpeningDate) 
+
+
+select distinct accountid ,
+				CustomerID,
+				AccountTypeID ,
+				AccountStatusID ,
+				TRY_CONVERT(decimal (18,2) , balance ) , 
+				try_convert(datetime2 , openingdate ) 
+
+from bronze.accounts 
+
+-------------------------------------------------------------------------------------------------
+
+print 'truncating table silver.account_types' ; 
+TRUNCATE TABLE silver.account_types;
+print 'inserting into silver.account_types' ;
+
+
+insert into silver.account_types
+								( AccountTypeID	, 
+								  TypeName ) 
+
+select AccountTypeID , TypeName 
+from bronze.account_types ; 
+
+--------------------------------------------------------------------------------------------------
+
+print 'truncating table silver.account_statuses' ; 
+TRUNCATE TABLE silver.account_statuses;
+print 'inserting into silver.account_statuses' ;
+
+
+ insert into silver.account_statuses
+									( AccountStatusID , 
+									  StatusName)
+
+select AccountStatusID , StatusName
+from bronze.account_statuses 
+
+
+		END
