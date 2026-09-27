@@ -1,0 +1,91 @@
+/* Check row counts between Gold and Silver layers */
+
+SELECT 'gold.dim_branches' AS table_name, COUNT(*) AS row_count
+FROM gold.dim_branches
+
+UNION ALL
+
+SELECT 'silver.branches', COUNT(*)
+FROM silver.branches;
+--------------------------------------------------------------
+
+GO
+
+SELECT 'gold.dim_transactiontypes' AS table_name, COUNT(*) AS row_count
+FROM gold.dim_transactiontypes
+
+UNION ALL
+
+SELECT 'silver.transaction_types', COUNT(*)
+FROM silver.transaction_types;
+
+
+-------------------------------------------------------------------------
+
+GO
+
+SELECT 'gold.dim_customers' AS table_name, COUNT(*) AS row_count
+FROM gold.dim_customers
+
+UNION ALL
+
+SELECT 'silver.customers', COUNT(*)
+FROM silver.customers;
+
+---------------------------------------------------------------------------
+
+
+GO
+
+SELECT 'gold.dim_accounts' AS table_name, COUNT(*) AS row_count
+FROM gold.dim_accounts
+
+UNION ALL
+
+SELECT 'silver.accounts', COUNT(*)
+FROM silver.accounts;
+
+
+----------------------------------------------------------------
+
+
+GO
+
+SELECT 'gold.dim_loanstatus' AS table_name, COUNT(*) AS row_count
+FROM gold.dim_loanstatus
+
+UNION ALL
+
+SELECT 'silver.loan_statuses', COUNT(*)
+FROM silver.loan_statuses;
+
+
+------------------------------------------------------------------
+
+
+GO
+
+SELECT 'gold.fact_transactions' AS table_name, COUNT(*) AS row_count
+FROM gold.fact_transactions
+
+UNION ALL
+
+SELECT 'silver.transactions', COUNT(*)
+FROM silver.transactions;
+
+
+-------------------------------------------------------------------------------
+
+GO
+
+SELECT 'gold.fact_loans' AS table_name, COUNT(*) AS row_count
+FROM gold.fact_loans
+
+UNION ALL
+
+SELECT 'silver.loans', COUNT(*)
+FROM silver.loans;
+
+GO
+
+-----------------------------------------------------------------
