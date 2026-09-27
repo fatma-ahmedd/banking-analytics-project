@@ -1,0 +1,152 @@
+/* use this script to create the gold layer (select specific columns 
+and rename columns to fit with business requirements) */
+
+-- [1] gold.dim_branches --
+
+CREATE VIEW gold.dim_branches AS (
+
+	SELECT  row_number() over(order by branchid asc ) as branch_key ,
+			b.branchid as branch_id,
+			b.branchname as branch_name,
+			a.street ,
+			a.city,
+			a.country
+	FROM silver.branches as b
+	LEFT JOIN silver.addresses as a
+	ON b.addressid = a.addressid ); 
+
+	GO
+-----------------------------------------------------------------
+-- [2] gold.dim_transactiontypes --
+
+CREATE VIEW gold.dim_transactiontypes AS (
+
+	SELECT transactiontypeid as type_id ,
+		   typename as type_name 
+	FROM silver.transaction_types )
+
+
+GO
+----------------------------------------------------------------- 
+-- [3] gold.dim_customers --
+
+CREATE VIEW gold.dim_customers AS	 (
+
+	SELECT row_number() over(order by customerid asc ) as customer_key ,
+		   C.customerid as customer_id,
+		   C.firstname as first_name,
+		   C.lastname as last_name,
+		   T.typename as customer_type,
+		   A.street ,
+		   A.city,
+		   A.country ,
+		   C.dateofbirth as birth_date
+
+
+	FROM SILVER.CUSTOMERS AS C 
+	LEFT JOIN SILVER.customer_types AS T 
+	ON C.CUSTOMERTYPEID=T.CUSTOMERTYPEID
+	LEFT JOIN SILVER.addresses AS A 
+	ON C.ADDRESSID=A.ADDRESSID ) ;
+
+
+	GO 
+---------------------------------------------------------------------
+-- [4] gold.dim_accounts --
+
+CREATE VIEW gold.dim_accounts AS (
+
+	SELECT  row_number() over(order by accountid asc ) as account_key ,
+			a.accountid as account_id, 
+			c.customer_key,
+			t.typename as type_name ,
+			s.statusname as status_name,
+			a.balance ,
+			a.openingdate as opening_date
+
+	FROM silver.accounts as a 
+	LEFT JOIN silver.account_types as t 
+	ON a.accounttypeID=t.accounttypeID
+	LEFT JOIN silver.account_statuses as s
+	ON a.accountstatusid=s.accountstatusid 
+	LEFT JOIN gold.dim_customers as c 
+	ON c.customer_id = a.CustomerID ) ; 
+
+	GO
+------------------------------------------------------------
+-- [5] gold.dim_loanstatus --
+
+CREATE VIEW  gold.dim_loanstatus AS(
+
+SELECT loanstatusid ,
+	   statusname
+FROM silver.loan_statuses);
+
+
+GO
+-----------------------------------------------------------
+-- [6] gold.fact_transactions --
+
+CREATE VIEW gold.fact_transactions AS (
+
+	SELECT  t.transactionid as transaction_id, 
+			a.account_key as origin_key ,
+			ad.account_key as destination_key,
+			t.transactiontypeid as transaction_type_id,
+			b.branch_key ,
+			t.amount ,
+			t.transactiondate as date 
+		
+		
+	FROM silver.transactions as t
+	LEFT JOIN gold.dim_branches as b
+	ON t.BranchID=b.branch_id
+	LEFT JOIN gold.dim_accounts as a 
+	ON t.AccountOriginID=a.account_id
+	LEFT JOIN gold.dim_accounts AS ad
+	ON t.AccountDestinationID = ad.Account_ID) ;
+
+GO 
+-----------------------------------------------------------------
+-- [7] gold.fact_loans --
+
+CREATE VIEW gold.fact_loans AS(
+
+	SELECT l.loanid as loan_id,
+		   a.account_key,
+		   l.loanstatusid as status_id,
+		   l.principalamount as principal_amount ,
+		   l.interestrate as interest_rate,
+		   l.startdate as start_date ,
+		   l.estimatedenddate as estimated_end_date
+
+	FROM silver.loans as l 
+	LEFT JOIN gold.dim_accounts as a
+	ON a.account_id= l.accountid);
+
+---------------------------------------------------------------------------------------
+/* use this script to drop gold layer views in case the views 
+needs to be modified and updated then recreate it with ddl script */ 
+
+DROP VIEW gold.fact_transactions ; 
+GO 
+
+DROP VIEW gold.fact_loans; 
+GO 
+
+DROP VIEW gold.dim_branches ;
+GO  
+
+DROP VIEW gold.dim_transactiontypes;
+GO 
+
+DROP VIEW gold.dim_customers;
+GO 
+
+DROP VIEW gold.dim_accounts;
+GO 
+
+DROP VIEW gold.dim_loanstatus;
+GO
+
+-------------------------------------------------------------------------------
