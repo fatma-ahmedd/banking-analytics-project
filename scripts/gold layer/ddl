@@ -125,6 +125,52 @@ CREATE VIEW gold.fact_loans AS(
 	ON a.account_id= l.accountid);
 
 ---------------------------------------------------------------------------------------
+
+CREATE VIEW gold.dim_date AS
+
+WITH DateRange AS (
+    SELECT
+        MIN(CAST(Date AS date)) AS StartDate,
+        MAX(CAST(Date AS date)) AS EndDate
+    FROM gold.fact_transactions
+),
+
+Numbers AS (
+    SELECT TOP (
+        DATEDIFF(
+            DAY,
+            (SELECT StartDate FROM DateRange),
+            (SELECT EndDate FROM DateRange)
+        ) + 1
+    )
+        ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1 AS n
+    FROM sys.all_objects a
+    CROSS JOIN sys.all_objects b
+),
+
+Dates AS (
+    SELECT
+        DATEADD(DAY, n, StartDate) AS DateValue
+    FROM Numbers
+    CROSS JOIN DateRange
+)
+
+SELECT
+    CONVERT(INT, CONVERT(CHAR(8), DateValue, 112)) AS DateKey,
+    CAST(DateValue AS DATE) AS [Date],
+    YEAR(DateValue) AS [Year],
+    CONCAT('Q', DATEPART(QUARTER, DateValue)) AS [Quarter],
+    MONTH(DateValue) AS MonthNumber,
+    DATENAME(MONTH, DateValue) AS MonthName ,
+    CONCAT(
+    YEAR(DateValue),
+    '-Q',
+    DATEPART(QUARTER, DateValue)
+) AS YearQuarter
+FROM Dates;
+--------------------------------------------------------------------------------
+
+
 /* use this script to drop gold layer views in case the views 
 needs to be modified and updated then recreate it with ddl script */ 
 
@@ -149,4 +195,6 @@ GO
 DROP VIEW gold.dim_loanstatus;
 GO
 
+DROP VIEW gold.dim_date;
+GO
 -------------------------------------------------------------------------------
